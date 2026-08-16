@@ -9,8 +9,8 @@ Included files are limited to:
 - the evidence-local and open-abstraction runtimes with their manifest-bound
   Scope support modules;
 - the standard-library WSE client with a bounded per-call wall-clock deadline;
-- the retained V1/V2, constrained-decoding V3 and open-abstraction V4 gpu01
-  development manifests;
+- the retained V1/V2, constrained-decoding V3, open-abstraction V4 and keyed
+  wire-repair V5 gpu01 development manifests;
 - the manifest-bound AutoSchemaKG baseline checkpoint; and
 - the four previously received pair-decision call records inside the bound
   technical-failure artifact.
@@ -51,6 +51,15 @@ exact-label consolidation with complete source-edge lineage. Evaluator gold is
 not packaged and never enters model requests. V4 remains consumed development;
 the unchanged post-hoc quality gate decides whether any later confirmation or
 cross-model robustness run is warranted.
+
+V4 terminated after three calls because a syntactically valid array repeated
+one `source_edge_id` and omitted another. V5 changes only that wire contract:
+the same 14 packet memberships and prompt byte sizes now use an object whose
+edge IDs are required keys. Its raw manifest SHA-256 is
+`461555d62c46d82450c41fd9458fe71e21ce8e7e4e1a73cdad236b7434e963e2`;
+the runtime SHA-256 is
+`38507d05f0cee5810e5fcbab0030cc640d03e14a7ad04db82605607bd2de583d`.
+This is a serialization repair, not another scientific intervention.
 
 The queue job must pin both this repository commit and the compatible OCI base
 image digest. Results remain consumed-development evidence and cannot be
