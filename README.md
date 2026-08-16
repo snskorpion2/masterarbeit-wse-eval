@@ -7,6 +7,7 @@ It is intended for anonymous checkout by the WSE vLLM job queue.
 Included files are limited to:
 
 - the evidence-local edge-mapping runtime;
+- the standard-library WSE client with a bounded per-call wall-clock deadline;
 - the frozen gpu01 development manifest;
 - the manifest-bound AutoSchemaKG baseline checkpoint; and
 - the four previously received pair-decision call records inside the bound
@@ -14,13 +15,13 @@ Included files are limited to:
 
 Evaluator-only gold, thesis sources, private annotations, credentials, local
 paths, environment files and unrelated experiment results are intentionally
-absent. The runtime imports the existing digest-pinned WSE base-image modules;
+absent. The runtime imports the remaining digest-pinned WSE base-image modules;
 this repository is not a standalone Python package.
 
 The frozen raw bindings are:
 
 - manifest SHA-256:
-  `fa7c0697f04e9f88197a1681f94597f86e066a2ecfaa41a2862b1e464d13f8e4`
+  `7562c962dfd1c38e2b6bed4476a6f6ed9e38b9b5c53a7aa939db505d3d17dab7`
 - baseline SHA-256:
   `a6618e2fa23dfe0aea88cea40fba838d7ea5ee9d42a315ab7008969606ddc435`
 - replay evidence SHA-256:
