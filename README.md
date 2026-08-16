@@ -6,7 +6,8 @@ It is intended for anonymous checkout by the WSE vLLM job queue.
 
 Included files are limited to:
 
-- the evidence-local edge-mapping runtime;
+- the evidence-local edge-mapping runtime and its four manifest-bound Scope
+  runtime modules;
 - the standard-library WSE client with a bounded per-call wall-clock deadline;
 - the frozen gpu01 development manifest;
 - the manifest-bound AutoSchemaKG baseline checkpoint; and
@@ -15,7 +16,8 @@ Included files are limited to:
 
 Evaluator-only gold, thesis sources, private annotations, credentials, local
 paths, environment files and unrelated experiment results are intentionally
-absent. The runtime imports the remaining digest-pinned WSE base-image modules;
+absent. The runtime imports only lower-level dependencies from the
+digest-pinned WSE base image;
 this repository is not a standalone Python package.
 
 The frozen raw bindings are:
