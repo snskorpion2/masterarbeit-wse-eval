@@ -182,6 +182,11 @@ def run(manifest_path: Path, results_root: Path, client: Any) -> dict[str, Any]:
     exact = [row for row in models if (row.get("name") or row.get("id")) == "Qwen/Qwen3-14B"]
     if len(exact) != 1:
         raise ValueError("manifest model is not uniquely available")
+    live_context = exact[0].get("context_length", exact[0].get("max_model_len"))
+    if live_context is not None and int(live_context) < int(
+        manifest["model_assignment"]["context_length"]
+    ):
+        raise ValueError("manager model context contradicts the frozen manifest")
     checkpoint_dir = results_root / "checkpoints"
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
     with client.model_lease(ttl_seconds=7200, auto_renew=True) as lease:
