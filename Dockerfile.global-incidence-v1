@@ -1,0 +1,15 @@
+ARG BASE_IMAGE=ghcr.io/snskorpion2/masterarbeit-wse-eval@sha256:62574f30cec5e5a8b711a3a68181702350a0894fffd2ef1078cfcb17445bff82
+FROM ${BASE_IMAGE}
+
+USER root
+COPY Experiments/wse/scope_quality/wse_scope_global_incidence_eval.py \
+    /app/Experiments/wse/scope_quality/wse_scope_global_incidence_eval.py
+COPY Experiments/results/local_dominance_v1/manifests/wse_scope_global_incidence_v1/development_gpu01.json \
+    /app/bundle/global_incidence_development_gpu01.json
+
+ARG SOURCE_COMMIT
+LABEL org.opencontainers.image.source="https://github.com/snskorpion2/Masterarbeit" \
+      org.opencontainers.image.revision="${SOURCE_COMMIT}" \
+      org.opencontainers.image.description="Global incidence-guided schema development"
+
+USER 65532:65532
