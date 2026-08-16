@@ -64,3 +64,15 @@ This is a serialization repair, not another scientific intervention.
 The queue job must pin both this repository commit and the compatible OCI base
 image digest. Results remain consumed-development evidence and cannot be
 reported as held-out confirmation or general AutoSchemaKG dominance.
+
+The information-preservation V2 bundle is a separate, item-level output-blind
+confirmation arm. It compares the unchanged AutoSchemaKG event context with
+one frozen selective policy: preserve the event byte-for-byte when it already
+fits the 6000-character budget; otherwise use the existing semantic ranking,
+but abstain to `None` when a multi-token named question anchor is absent. The
+40 cases and 80 paired cells are fixed before responses. Its manifest SHA-256
+is `60872c44b2bb2229a535cd6e1a5be6683509ecce67dace2ba5fc67230c21b1c5`.
+The decision gate requires at least +0.05 absolute accuracy and at least 20%
+prompt-token reduction against the event arm. Because source articles overlap
+earlier runs, a pass supports item-level evidence only; a later article-level
+replication remains necessary.
