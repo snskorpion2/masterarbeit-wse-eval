@@ -34,16 +34,32 @@ import wse_scope_pairmerge_keyed_eval as keyed  # noqa: E402
 import wse_scope_partition_eval as partition  # noqa: E402
 
 
-CHECKPOINT_SCHEMA = "wse-scope-evidence-local-edge-development-v1"
-MANIFEST_SCHEMA = "wse-scope-evidence-local-edge-manifest-v1"
-PROTOCOL = "wse-scope-evidence-local-edge-development-v1"
-SUMMARY_SCHEMA = "wse-scope-evidence-local-edge-summary-v1"
-FAILURE_SCHEMA = "wse-scope-evidence-local-edge-technical-failure-v1"
+CHECKPOINT_SCHEMA = "wse-scope-evidence-local-label-checkpoint-v2"
+MANIFEST_SCHEMA = "wse-scope-evidence-local-label-manifest-v2"
+PROTOCOL = "wse-scope-evidence-local-label-development-v2"
+SUMMARY_SCHEMA = "wse-scope-evidence-local-label-summary-v2"
+FAILURE_SCHEMA = "wse-scope-evidence-local-label-technical-failure-v2"
 SOURCE_FAILURE_SCHEMA = (
     "wse-scope-evidence-pairmerge-normalized-technical-failure-v1"
 )
 MAX_PROMPT_BYTES = 6000
 MAX_EXCERPT_BYTES = 320
+V1_MAPPING_SYSTEM_PROMPT = (
+    "Map every raw schema edge using only its quoted source evidence and the "
+    "fixed vocabularies. Return exactly {\"edge_mappings\":[...]} with one "
+    "object per source_edge_id and exactly source_edge_id, head_type_id, "
+    "relation_type_id, tail_type_id, reverse. IDs are integers from the given "
+    "vocabularies. reverse is boolean and swaps endpoints only when required. "
+    "Do not omit or invent edges. Output JSON only."
+)
+MAPPING_SYSTEM_PROMPT = (
+    "Map every raw schema edge using only its quoted source evidence and the "
+    "fixed vocabularies. Return exactly {\"edge_mappings\":[...]} with one "
+    "object per source_edge_id and exactly source_edge_id, head_type, "
+    "relation_type, tail_type, reverse. Type and relation values must exactly "
+    "equal supplied labels. reverse is boolean and swaps endpoints only when "
+    "required. Do not omit or invent edges. Output JSON only."
+)
 
 
 def _sha256_bytes(value: bytes) -> str:
@@ -63,10 +79,15 @@ def _load_manifest(path: Path, expected_sha256: str) -> tuple[dict[str, Any], st
     semantic = {key: value for key, value in manifest.items() if key != "artifact_sha256"}
     selection = manifest.get("evidence_selection_contract", {})
     replay = manifest.get("replay_binding", {})
+    repair = manifest.get("repair_binding", {})
     if (
         manifest.get("schema") != MANIFEST_SCHEMA
         or manifest.get("protocol_id") != PROTOCOL
         or manifest.get("artifact_sha256") != partition._semantic_sha(semantic)
+        or manifest.get("response_contract")
+        != "exact-closed-vocabulary-label-mapping-v2"
+        or manifest.get("projection_contract")
+        != "closed-vocabulary-evidence-local-label-direction-v2"
         or manifest.get("server_label") != "gpu01"
         or manifest.get("model") != "Qwen/Qwen3-14B"
         or manifest.get("pair_request_max_bytes") != MAX_PROMPT_BYTES
@@ -74,6 +95,20 @@ def _load_manifest(path: Path, expected_sha256: str) -> tuple[dict[str, Any], st
         or selection.get("maximum_excerpt_utf8_bytes") != MAX_EXCERPT_BYTES
         or replay.get("source_failure_schema") != SOURCE_FAILURE_SCHEMA
         or replay.get("completed_pair_call_count") != 4
+        or repair.get("schema")
+        != "wse-scope-evidence-local-label-repair-v2"
+        or repair.get("v1_edge_artifact_sha256")
+        != "c3b9f0ff67a51f2093829610321a3ce4845a4b1f7b0c910081cf0c2e0a43e3ea"
+        or repair.get("v1_summary_sha256")
+        != "34bb19b13e9c039e783042d3bab40bd2ff9aca047353dd226cfd4dc6ae56c2b6"
+        or repair.get("failed_packet_index") != 19
+        or repair.get("closed_type_count") != 99
+        or repair.get("valid_type_id_maximum") != 98
+        or repair.get("observed_invalid_tail_type_id") != 99
+        or repair.get("v1_parser_error") != "edge-mapping binding is invalid"
+        or repair.get("mapping_packet_count") != 34
+        or repair.get("maximum_v1_prompt_utf8_bytes") != 5970
+        or repair.get("maximum_v2_prompt_utf8_bytes") != 5976
         or manifest.get("request_parameters", {}).get("candidate", {}).get(
             "temperature"
         )
@@ -160,20 +195,14 @@ def _mapping_request(
     rows: list[dict[str, Any]],
     canonical_types: tuple[str, ...],
     canonical_relations: tuple[str, ...],
+    *,
+    system_prompt: str = MAPPING_SYSTEM_PROMPT,
 ) -> dict[str, Any]:
     payload = {
         "types": list(enumerate(canonical_types)),
         "relations": list(enumerate(canonical_relations)),
         "edges": rows,
     }
-    system = (
-        "Map every raw schema edge using only its quoted source evidence and the "
-        "fixed vocabularies. Return exactly {\"edge_mappings\":[...]} with one "
-        "object per source_edge_id and exactly source_edge_id, head_type_id, "
-        "relation_type_id, tail_type_id, reverse. IDs are integers from the given "
-        "vocabularies. reverse is boolean and swaps endpoints only when required. "
-        "Do not omit or invent edges. Output JSON only."
-    )
     user = json.dumps(
         payload,
         ensure_ascii=False,
@@ -181,13 +210,15 @@ def _mapping_request(
         sort_keys=True,
         separators=(",", ":"),
     )
-    prompt_bytes = len(system.encode("utf-8")) + len(user.encode("utf-8"))
+    prompt_bytes = len(system_prompt.encode("utf-8")) + len(user.encode("utf-8"))
     return {
-        "system_prompt": system,
+        "system_prompt": system_prompt,
         "user_prompt": user,
         "prompt_utf8_bytes": prompt_bytes,
         "prompt_sha256": _sha256_bytes(
-            canonical_json_bytes({"system_prompt": system, "user_prompt": user})
+            canonical_json_bytes(
+                {"system_prompt": system_prompt, "user_prompt": user}
+            )
         ),
     }
 
@@ -199,6 +230,7 @@ def build_edge_packets(
     canonical_relations: tuple[str, ...],
     *,
     source_edge_limit: int | None = None,
+    system_prompt: str = MAPPING_SYSTEM_PROMPT,
 ) -> tuple[dict[str, Any], ...]:
     document_by_id = {row["doc_id"]: row for row in manifest["documents"]}
     source_edges = sorted(
@@ -234,7 +266,10 @@ def build_edge_packets(
     ) -> dict[str, Any]:
         return {
             "request": _mapping_request(
-                [row for _, row, _ in values], canonical_types, canonical_relations
+                [row for _, row, _ in values],
+                canonical_types,
+                canonical_relations,
+                system_prompt=system_prompt,
             ),
             "source_edges": tuple(source for source, _, _ in values),
             "evidence_selections": [
@@ -260,6 +295,48 @@ def build_edge_packets(
     if current:
         packets.append(build(current))
     return tuple(packets)
+
+
+def _parse_edge_label_mappings(
+    response: dict[str, Any],
+    source_edges: tuple[dict[str, Any], ...],
+    canonical_types: tuple[str, ...],
+    canonical_relations: tuple[str, ...],
+) -> tuple[dict[str, Any], ...]:
+    value = json.loads(legacy._finished_content(response))
+    if not isinstance(value, dict) or set(value) != {"edge_mappings"}:
+        raise ValueError("edge-label mapping response schema is invalid")
+    rows = value["edge_mappings"]
+    if not isinstance(rows, list):
+        raise ValueError("edge label mappings are not a list")
+    expected_ids = {row["source_edge_id"] for row in source_edges}
+    observed: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        if (
+            not isinstance(row, dict)
+            or set(row)
+            != {
+                "source_edge_id",
+                "head_type",
+                "relation_type",
+                "tail_type",
+                "reverse",
+            }
+            or row.get("source_edge_id") not in expected_ids
+            or row["source_edge_id"] in observed
+            or type(row.get("head_type")) is not str
+            or row["head_type"] not in canonical_types
+            or type(row.get("tail_type")) is not str
+            or row["tail_type"] not in canonical_types
+            or type(row.get("relation_type")) is not str
+            or row["relation_type"] not in canonical_relations
+            or type(row.get("reverse")) is not bool
+        ):
+            raise ValueError("edge-label mapping binding is invalid")
+        observed[row["source_edge_id"]] = dict(row)
+    if set(observed) != expected_ids:
+        raise ValueError("edge label mappings are incomplete")
+    return tuple(observed[source_id] for source_id in sorted(observed))
 
 
 def _validated_record(
@@ -398,7 +475,7 @@ def _execute(
             }
             mapping_records.append(record)
             mappings.extend(
-                legacy._parse_edge_mappings(
+                _parse_edge_label_mappings(
                     result.response, packet["source_edges"], types, relations
                 )
             )
@@ -409,7 +486,7 @@ def _execute(
     if smoke:
         status = "smoke_complete" if parser_error is None else "smoke_parse_failure"
         value = {
-            "schema": "wse-scope-evidence-local-edge-smoke-v1",
+            "schema": "wse-scope-evidence-local-label-smoke-v2",
             "status": status,
             "manifest_sha256": manifest_sha,
             "source_baseline_sha256": baseline_sha,
@@ -450,7 +527,10 @@ def _execute(
             "model": baseline["model"],
             "protocol_id": baseline["protocol_id"],
         },
-        "method": "closed pair vocabulary plus evidence-local edge and direction mapping",
+        "method": (
+            "closed pair vocabulary plus evidence-local exact-label edge and "
+            "direction mapping"
+        ),
         "status": status,
         "fixed_denominator_source_edge_count": len(baseline["edges"]),
         "canonical_vocabulary": {"types": list(types), "relations": list(relations)},
