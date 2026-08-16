@@ -1,3 +1,4 @@
 Experiments/wse/scope_quality/** -text
 Experiments/wse/triple_quality/** -text
+Experiments/wse/multihop_qa/** -text
 Experiments/results/**/*.json -text
