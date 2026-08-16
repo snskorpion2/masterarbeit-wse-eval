@@ -22,6 +22,7 @@ except ModuleNotFoundError:
 
 EXPECTED_MANIFEST_SHA256_BY_FILENAME: dict[str, str] = {
     "confirmation_gpu01.json": "60872c44b2bb2229a535cd6e1a5be6683509ecce67dace2ba5fc67230c21b1c5",
+    "ip_selective_confirmation_gpu01.json": "60872c44b2bb2229a535cd6e1a5be6683509ecce67dace2ba5fc67230c21b1c5",
 }
 ARMS = ("event", "selective")
 _ANSWER_PATTERNS = (

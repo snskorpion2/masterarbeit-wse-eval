@@ -1,0 +1,12 @@
+ARG BASE_IMAGE=ghcr.io/snskorpion2/masterarbeit-wse-eval@sha256:106359ff3a1258ecad86d0fa384679514fda3bcee41a1ad2fcbd8a7344e635ad
+FROM ${BASE_IMAGE}
+
+USER root
+COPY Experiments/wse/information_preservation/wse_ip_selective_eval.py /app/Experiments/wse/information_preservation/wse_ip_selective_eval.py
+
+ARG SOURCE_COMMIT
+LABEL org.opencontainers.image.source="https://github.com/snskorpion2/masterarbeit-wse-eval" \
+      org.opencontainers.image.revision="${SOURCE_COMMIT}" \
+      org.opencontainers.image.description="Selective-context confirmation with package-filename binding"
+
+USER 65532:65532
