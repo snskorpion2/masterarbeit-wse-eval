@@ -10,8 +10,8 @@ COPY Experiments/wse/scope_quality/wse_scope_partition_eval.py \
     /app/wse_scope_partition_eval.py
 COPY Experiments/wse/scope_quality/wse_scope_global_incidence_eval.py \
     /app/Experiments/wse/scope_quality/wse_scope_global_incidence_eval.py
-COPY Experiments/results/local_dominance_v1/manifests/wse_scope_global_incidence_v1/development_h200_qwen3_6_35b_a3b.json \
-    /app/bundle/global_incidence_development_h200_qwen3_6_35b_a3b.json
+COPY Experiments/results/local_dominance_v1/manifests/wse_scope_global_incidence_v1/development_h200_*.json \
+    /app/bundle/
 
 ARG SOURCE_COMMIT
 LABEL org.opencontainers.image.source="https://github.com/snskorpion2/Masterarbeit" \
