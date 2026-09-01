@@ -1,0 +1,17 @@
+ARG BASE_IMAGE=ghcr.io/snskorpion2/masterarbeit-wse-eval@sha256:1448eb91d5ca883f025658b1b66490be6905312ffbdf9926e0c02572215912d0
+FROM ${BASE_IMAGE}
+
+USER root
+COPY Experiments/wse/triple_quality/wse_eval.py \
+    /app/Experiments/wse/triple_quality/wse_eval.py
+COPY Experiments/wse/scope_quality/wse_scope_global_incidence_eval.py \
+    /app/Experiments/wse/scope_quality/wse_scope_global_incidence_eval.py
+COPY Experiments/results/local_dominance_v1/manifests/wse_scope_global_incidence_v1/development_h200_qwen3_6_35b_a3b.json \
+    /app/bundle/global_incidence_development_h200_qwen3_6_35b_a3b.json
+
+ARG SOURCE_COMMIT
+LABEL org.opencontainers.image.source="https://github.com/snskorpion2/Masterarbeit" \
+      org.opencontainers.image.revision="${SOURCE_COMMIT}" \
+      org.opencontainers.image.description="H200 global incidence-guided schema development"
+
+USER 65532:65532

@@ -53,6 +53,10 @@ MDL_CONTRACT: dict[str, int | str] = {
     "exception_bits_per_distinct_incidence": 8,
     "decision": "accept_multi_member_cluster_only_when_candidate_bits_lt_singleton_bits",
 }
+SUPPORTED_MODEL_ASSIGNMENTS = {
+    ("gpu01", "Qwen/Qwen3-14B"),
+    ("h200", "Qwen/Qwen3.6-35B-A3B"),
+}
 DEFINITION_SYSTEM_PROMPT = (
     "Induce globally reusable schema labels from the supplied raw labels, corpus-level "
     "directed incidence signatures, peer labels and evidence. Return exactly one JSON "
@@ -539,8 +543,8 @@ def _load_manifest(path: Path, expected_sha256: str) -> tuple[dict[str, Any], st
         manifest.get("schema") != MANIFEST_SCHEMA
         or manifest.get("protocol_id") != PROTOCOL
         or manifest.get("artifact_sha256") != partition._semantic_sha(semantic)
-        or manifest.get("server_label") != "gpu01"
-        or manifest.get("model") != "Qwen/Qwen3-14B"
+        or (manifest.get("server_label"), manifest.get("model"))
+        not in SUPPORTED_MODEL_ASSIGNMENTS
         or contract.get("maximum_prompt_utf8_bytes") != MAX_PROMPT_BYTES
         or contract.get("maximum_definition_characters") != MAX_DEFINITION_CHARS
         or contract.get("gold_access") is not False

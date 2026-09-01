@@ -219,6 +219,7 @@ class WSEClient:
         policy = retry_policy or self.retry_policy
         retry_wait = 0.0
         attempt = 0
+        last_error: BaseException | None = None
         while True:
             elapsed = time.monotonic() - started
             if max_elapsed_seconds is not None and elapsed >= max_elapsed_seconds:
@@ -241,6 +242,7 @@ class WSEClient:
                     decoded = json.loads(response.read().decode("utf-8"))
                 return ChatResult(decoded, time.monotonic() - started, retry_wait)
             except urllib.error.HTTPError as error:
+                last_error = error
                 error_body = ""
                 try:
                     error_body = " ".join(
@@ -262,6 +264,7 @@ class WSEClient:
                         f"manager HTTP {error.code}{detail}"
                     ) from None
             except (urllib.error.URLError, TimeoutError, OSError) as error:
+                last_error = error
                 retry_after = None
             attempt += 1
             backoff = min(
@@ -274,7 +277,9 @@ class WSEClient:
             if retry_wait + wait > policy.max_total_wait_seconds or (
                 max_elapsed_seconds is not None and elapsed + wait >= max_elapsed_seconds
             ):
-                raise TransportIncomplete("manager retry budget exhausted") from error
+                raise TransportIncomplete(
+                    "manager retry budget exhausted"
+                ) from last_error
             retry_wait += wait
             if self.on_retry is not None:
                 self.on_retry(wait)
