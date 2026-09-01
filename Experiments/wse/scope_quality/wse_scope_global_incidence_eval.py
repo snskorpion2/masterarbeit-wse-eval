@@ -55,11 +55,22 @@ MDL_CONTRACT: dict[str, int | str] = {
 }
 SUPPORTED_MODEL_ASSIGNMENTS = {
     ("gpu01", "Qwen/Qwen3-14B"),
+    ("h200", "Qwen/Qwen2.5-32B-Instruct"),
+    ("h200", "Qwen/Qwen2.5-72B-Instruct-AWQ"),
+    ("h200", "Qwen/Qwen3-4B"),
+    ("h200", "Qwen/Qwen3-8B"),
     ("h200", "Qwen/Qwen3-14B"),
+    ("h200", "Qwen/Qwen3-32B"),
+    ("h200", "Qwen/Qwen3.5-9B"),
+    ("h200", "Qwen/Qwen3.5-27B"),
     ("h200", "Qwen/Qwen3.6-27B"),
     ("h200", "Qwen/Qwen3.6-35B-A3B"),
+    ("h200", "google/gemma-3-27b-it"),
     ("h200", "google/gemma-4-26B-A4B-it"),
     ("h200", "google/gemma-4-31B-it"),
+    ("h200", "meta-llama/Llama-3.1-8B-Instruct:128k"),
+    ("h200", "hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4"),
+    ("h200", "microsoft/phi-4:16k"),
 }
 DEFINITION_SYSTEM_PROMPT = (
     "Induce globally reusable schema labels from the supplied raw labels, corpus-level "
