@@ -55,6 +55,8 @@ MDL_CONTRACT: dict[str, int | str] = {
 }
 SUPPORTED_MODEL_ASSIGNMENTS = {
     ("gpu01", "Qwen/Qwen3-14B"),
+    ("h200", "Qwen/Qwen2.5-7B-Instruct"),
+    ("h200", "Qwen/Qwen2.5-14B-Instruct"),
     ("h200", "Qwen/Qwen2.5-32B-Instruct"),
     ("h200", "Qwen/Qwen2.5-72B-Instruct-AWQ"),
     ("h200", "Qwen/Qwen3-4B"),
