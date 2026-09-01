@@ -4,6 +4,10 @@ FROM ${BASE_IMAGE}
 USER root
 COPY Experiments/wse/triple_quality/wse_eval.py \
     /app/Experiments/wse/triple_quality/wse_eval.py
+COPY Experiments/wse/scope_quality/wse_scope_eval.py \
+    /app/wse_scope_eval.py
+COPY Experiments/wse/scope_quality/wse_scope_partition_eval.py \
+    /app/wse_scope_partition_eval.py
 COPY Experiments/wse/scope_quality/wse_scope_global_incidence_eval.py \
     /app/Experiments/wse/scope_quality/wse_scope_global_incidence_eval.py
 COPY Experiments/results/local_dominance_v1/manifests/wse_scope_global_incidence_v1/development_h200_qwen3_6_35b_a3b.json \
