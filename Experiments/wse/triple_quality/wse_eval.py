@@ -144,7 +144,6 @@ class ModelLease:
         self.auto_renew = auto_renew
         self.renew_failures = 0
         self._stop = threading.Event()
-        self._renew_in_progress = threading.Event()
         self._thread: threading.Thread | None = None
         self._expires_at = time.monotonic() + ttl_seconds
 
@@ -157,21 +156,16 @@ class ModelLease:
     def _renew_loop(self) -> None:
         interval = max(min(self.ttl_seconds / 3, 300), 0.05)
         while not self._stop.wait(interval):
-            self._renew_in_progress.set()
             try:
                 self.client.renew_lease(self.lease_id, self.ttl_seconds)
                 self._expires_at = time.monotonic() + self.ttl_seconds
             except Exception:
                 self.renew_failures += 1
                 self._stop.set()
-            finally:
-                self._renew_in_progress.clear()
 
     def assert_healthy(self) -> None:
         if self.renew_failures:
             raise LeaseRenewalFailed("lease renewal failed")
-        if self._renew_in_progress.is_set():
-            raise LeaseRenewalFailed("lease renewal is in progress")
         if time.monotonic() >= self._expires_at:
             raise LeaseRenewalFailed("lease expiry could not be ruled out")
         if self.auto_renew and (
