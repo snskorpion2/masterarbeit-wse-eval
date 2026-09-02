@@ -63,7 +63,7 @@ MAVEN_ARG_V4_MODEL_IDENTITY_CLAIM_GUARD = {
         "live verified."
     ),
 }
-EXPECTED_MANIFEST_SHA256: dict[str, str] = {}
+EXPECTED_MANIFEST_SHA256: dict[str, str] = {"confirmation_h200_qwen3_8_27b_16k.json": "a85c9d3b52e37d7e8fd5e59d87f6b2ac1643d104646c08f099e2f4a73079526e"}
 STATUSES = {
     "ok",
     "partial_accept",
