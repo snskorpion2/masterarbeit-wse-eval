@@ -344,7 +344,10 @@ class WSEClient:
         lease: ModelLease,
         max_elapsed_seconds: float | None = None,
     ) -> ChatResult:
-        payload = {"model": model, "messages": messages, **parameters}
+        model_parameters = dict(parameters)
+        if not model.startswith("Qwen/"):
+            model_parameters.pop("chat_template_kwargs", None)
+        payload = {"model": model, "messages": messages, **model_parameters}
         payload["lease_id"] = lease.lease_id
         return self._request(
             "POST",
