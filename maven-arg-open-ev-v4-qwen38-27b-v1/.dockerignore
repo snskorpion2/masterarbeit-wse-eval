@@ -1,0 +1,8 @@
+**
+!bundle/development_h200_qwen3_8_27b.json
+!Dockerfile
+!MAVEN_ARG_NOTICE.md
+!NOTICE.md
+!wse_eval.py
+!wse_published_gold_triple_eval.py
+!.dockerignore
