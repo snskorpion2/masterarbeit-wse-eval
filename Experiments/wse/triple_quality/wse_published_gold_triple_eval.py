@@ -253,6 +253,13 @@ def _assert_lease_healthy(lease: Any) -> None:
         raise LeaseRenewalFailed("lease renewal failed")
 
 
+def _decode_received_json(content: str) -> Any:
+    candidate = content.strip()
+    if candidate.startswith("```json\n") and candidate.endswith("\n```"):
+        candidate = candidate[len("```json\n") : -len("\n```")]
+    return json.loads(candidate)
+
+
 def _parse_received(cell: dict[str, Any], response: dict[str, Any]) -> dict[str, Any]:
     try:
         choice = response["choices"][0]
@@ -268,7 +275,7 @@ def _parse_received(cell: dict[str, Any], response: dict[str, Any]) -> dict[str,
     if not isinstance(content, str):
         return {"status": "parse_error"}
     try:
-        records = json.loads(content)
+        records = _decode_received_json(content)
     except (json.JSONDecodeError, ValueError):
         return {"status": "parse_error"}
     if not isinstance(records, list):
