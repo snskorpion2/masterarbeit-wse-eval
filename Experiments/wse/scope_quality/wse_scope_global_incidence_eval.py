@@ -23,6 +23,8 @@ for relative in (
         sys.path.insert(0, value)
 
 from wse_eval import (  # noqa: E402
+    RUN_CHAT_MAX_ELAPSED_SECONDS,
+    SMOKE_CHAT_MAX_ELAPSED_SECONDS,
     TransportIncomplete,
     WSEClient,
     canonical_json_bytes,
@@ -632,7 +634,13 @@ def _main() -> int:
         value = run_global_incidence(
             args.manifest,
             args.results_root,
-            WSEClient(),
+            WSEClient(
+                chat_max_elapsed_seconds=(
+                    SMOKE_CHAT_MAX_ELAPSED_SECONDS
+                    if args.smoke
+                    else RUN_CHAT_MAX_ELAPSED_SECONDS
+                )
+            ),
             expected_manifest_sha256=args.manifest_sha256,
             smoke=args.smoke,
         )

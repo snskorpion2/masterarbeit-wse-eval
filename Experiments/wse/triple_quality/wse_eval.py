@@ -63,6 +63,10 @@ class RetryPolicy(NamedTuple):
     backoff_cap_seconds: float = 120
 
 
+SMOKE_CHAT_MAX_ELAPSED_SECONDS = 5 * 60
+RUN_CHAT_MAX_ELAPSED_SECONDS = 15 * 60
+
+
 class ChatResult(NamedTuple):
     response: dict[str, Any]
     client_elapsed_seconds: float
@@ -198,11 +202,13 @@ class WSEClient:
         token: str | None = None,
         retry_policy: RetryPolicy | None = None,
         on_retry: Callable[[float], None] | None = None,
+        chat_max_elapsed_seconds: float = RUN_CHAT_MAX_ELAPSED_SECONDS,
     ) -> None:
         self.base_url = (base_url or os.environ["VLLM_MANAGER_URL"]).rstrip("/")
         self._token = token or os.environ["VLLM_MANAGER_TOKEN"]
         self.retry_policy = retry_policy or RetryPolicy()
         self.on_retry = on_retry
+        self.chat_max_elapsed_seconds = chat_max_elapsed_seconds
 
     def _request(
         self,
@@ -336,6 +342,7 @@ class WSEClient:
         messages: list[dict[str, str]],
         parameters: dict[str, Any],
         lease: ModelLease,
+        max_elapsed_seconds: float | None = None,
     ) -> ChatResult:
         payload = {"model": model, "messages": messages, **parameters}
         payload["lease_id"] = lease.lease_id
@@ -343,7 +350,11 @@ class WSEClient:
             "POST",
             "/v1/chat/completions",
             payload,
-            max_elapsed_seconds=self.retry_policy.max_total_wait_seconds,
+            max_elapsed_seconds=(
+                self.chat_max_elapsed_seconds
+                if max_elapsed_seconds is None
+                else max_elapsed_seconds
+            ),
         )
 
 
@@ -759,7 +770,13 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    client = WSEClient()
+    client = WSEClient(
+        chat_max_elapsed_seconds=(
+            SMOKE_CHAT_MAX_ELAPSED_SECONDS
+            if args.command in {"smoke", "smoke-cell"}
+            else RUN_CHAT_MAX_ELAPSED_SECONDS
+        )
+    )
     if args.command == "catalog":
         catalog(client, args.server_label, args.output)
     elif args.command == "smoke":
