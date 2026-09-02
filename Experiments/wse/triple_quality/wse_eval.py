@@ -63,7 +63,7 @@ class RetryPolicy(NamedTuple):
     backoff_cap_seconds: float = 120
 
 
-SMOKE_CHAT_MAX_ELAPSED_SECONDS = 5 * 60
+SMOKE_CHAT_MAX_ELAPSED_SECONDS = 15 * 60
 RUN_CHAT_MAX_ELAPSED_SECONDS = 15 * 60
 
 
