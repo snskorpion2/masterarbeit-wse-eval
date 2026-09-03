@@ -72,7 +72,7 @@ def _load_manifest(path: Path, expected_sha256: str) -> dict[str, Any]:
         or value.get("protocol_id") != PROTOCOL_ID
         or value.get("server_label") != "gpu01"
         or value.get("model") != "Qwen/Qwen3-14B"
-        or value.get("context_length") != 32768
+        or value.get("context_length") != 8192
     ):
         raise ValueError("SEC evidence-slot manifest identity differs")
     budget = value.get("budget", {})
