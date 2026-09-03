@@ -1,0 +1,7 @@
+**
+!bundle/development_gpu01_qwen3_14b.json
+!Dockerfile
+!NOTICE.md
+!wse_eval.py
+!wse_published_gold_triple_eval.py
+!.dockerignore
