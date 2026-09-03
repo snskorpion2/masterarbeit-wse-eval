@@ -109,7 +109,7 @@ def _validate_live_model(manifest: dict[str, Any], models: Iterable[dict[str, An
             selected = {"name": manifest["model"]}
             available = row
             break
-    if selected is None or _sha256_bytes(canonical_json_bytes(selected)) != expected:
+    if selected is None or _sha256_bytes(canonical_json_bytes(selected) + b"\n") != expected:
         raise ValueError("live WSE SEC model differs from frozen binding")
     manager_context = available.get(
         "context_length", available.get("max_model_len")

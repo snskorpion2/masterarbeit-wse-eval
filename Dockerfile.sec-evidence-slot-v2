@@ -1,0 +1,17 @@
+ARG BASE_IMAGE=ghcr.io/snskorpion2/masterarbeit-wse-eval@sha256:1448eb91d5ca883f025658b1b66490be6905312ffbdf9926e0c02572215912d0
+FROM ${BASE_IMAGE}
+
+USER root
+COPY Experiments/wse/triple_quality/wse_eval.py \
+    /app/Experiments/wse/triple_quality/wse_eval.py
+COPY Experiments/wse/multihop_qa/wse_sec_evidence_slot_eval.py \
+    /app/Experiments/wse/multihop_qa/wse_sec_evidence_slot_eval.py
+COPY Experiments/results/local_dominance_v1/manifests/wse_sec_evidence_slot_v2/development_gpu01_runtimefix.json \
+    /app/bundle/sec_evidence_slot_development_gpu01_runtimefix.json
+
+ARG SOURCE_COMMIT
+LABEL org.opencontainers.image.source="https://github.com/snskorpion2/masterarbeit-wse-eval" \
+      org.opencontainers.image.revision="${SOURCE_COMMIT}" \
+      org.opencontainers.image.description="SEC-v2 evidence-slot composer runtime-fix development arm"
+
+USER 65532:65532
